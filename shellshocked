@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "\e[1m\e[44m  Shock Shocked?\e[0m\e[44m by Puneeth\e[49m "
+echo -e "\e[1m\e[44m  Shell Shocked?\e[0m\e[44m by Puneeth\e[49m "
 echo -e "\e[1m"
 echo "  This script will quickly check if your system is vulernable to the "
 echo "  Shellshock and Aftershock bugs."
