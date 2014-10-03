@@ -1,0 +1,114 @@
+#!/bin/bash
+
+#########################################
+#					#
+#  ShockCheck				#
+#  version: 1.2				#
+#  author: Axiant			#
+#  released: 2014-10-01			#
+#  modified: 2014-10-02			#
+#					#
+#  www.axiant.co.uk			#
+#					#
+#########################################
+
+# Redirect STDERR
+exec 2>/dev/null
+
+echo -e "\e[1m\e[44m  ShockCheck\e[0m\e[44m by Axiant                            http://www.axiant.co.uk\e[49m "
+echo -e "\e[1m"
+echo "  This script will quickly check if your system is vulernable to the "
+echo "  Shellshock and Aftershock bugs CVE-2014-6271, CVE-2014-7169, CVE-2014-6277 and CVE-2014-6278."
+echo -e " "
+echo -e "  \e[1mBash version  \e[0m: `bash --version | head -n1`"
+echo -e "  \e[1mKernel release\e[0m: `uname -r`"
+echo -e "  \e[1mKernel version\e[0m: `uname -v`"
+echo -e "  \e[1mProcessor     \e[0m: `uname -p`"
+echo -e "\n\n"
+
+# Prompt and wait for start
+
+echo "  Press any key to begin, or Ctrl-C to exit..."
+read -p "  Press any key to begin, or Ctrl-C to exit..."
+echo -e "\n"
+
+# Test for CVE-2014-6271
+
+vtest=$(echo `env x='() { :;}; echo vulnerable' bash -c "echo this is a test"`)
+vtest=$(echo $vtest | awk '{ print $1 }')
+if [ "$vtest" == "vulnerable" ]
+then
+  echo -e "  CVE-2014-6271: \e[1m\e[41mVulnerable\e[49m\e[0m"
+  vuln="TRUE"
+else
+  echo "  CVE-2014-6271: Safe"
+fi
+
+# Test for CVE-2014-7169
+
+vtest=$(env X='() { (a)=>\' bash -c "echo date"; cat echo)
+if [ -b "./echo" ]
+then
+  vtest="vulnerable"
+  rm -f ./echo
+fi
+if [ "$vtest" == "vulnerable" ]
+then
+  echo -e "  CVE-2014-7169: \e[1m\e[41mVulnerable\e[49m\e[0m"
+  vuln="TRUE"
+else
+  echo "  CVE-2014-7169: Safe"
+fi
+
+# Test for CVE-2014-6277
+
+vtest=$(foo='() { echo vulnerable; }' bash -c foo)
+vtest=$(echo "$vtest" | awk '{ print $NF }')
+if [ "$vtest" == "vulnerable" ]
+then
+  echo -e "  CVE-2014-6277: \e[1m\e[41mVulnerable\e[49m\e[0m"
+  vuln="TRUE"
+else
+  echo "  CVE-2014-6277: Safe"
+fi
+
+# Test for CVE-2014-6278
+
+vtest=$((setenv foo '() { echo not patched; }'; bash -c foo))
+vtest=$(echo "$vtest" | awk '{ print $NF }')
+if [ "$vtest" == "vulnerable" ]
+then
+  echo -e "  CVE-2014-6278: \e[1m\e[41mVulnerable\e[49m\e[0m"
+  vuln="TRUE"
+else
+  echo "  CVE-2014-6278: Safe"
+fi
+
+echo -e "\n\n"
+
+# Conclusion
+if [ "$vuln" == "TRUE" ]
+then
+  echo -e "  \e[1mThe version of Bash running on your system is vulnerable. It is "
+  echo "  important that you update it as soon as possible"
+  echo -e "\e[0m "
+  echo "  Axiant offer server maintenance services that could help you to"
+  echo "  patch Bash on your server. If you would like more details enter"
+  echo "  your email address below, otherwise just press Enter to quit."
+  read  email
+  
+  # Send email if not blank
+  if [ -n "$email" ]
+  then
+    wget -qO- "http://www.axiant.co.uk/inc/contact.php?email=$email&name=ShockCheck&msg=ShockCheck+enquiry" 
+  fi
+else
+  echo "  It looks as though your version of Bash is up to date and safe."
+  echo " "
+  echo "  Follow us on Twitter for the latest updates"
+  echo "  http://www.twitter.com/axiant"
+fi
+
+echo -e "\n\n"
+
+exit
